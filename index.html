@@ -52,12 +52,13 @@
             transform: translateX(-50%);
             width: 100%;
             max-width: 900px;
-            height: 72svh;
+            height: 82svh; /* Increased base height */
             display: flex;
             justify-content: center;
             align-items: flex-end;
             z-index: 10;
             pointer-events: none;
+            transition: all 0.3s ease;
         }
 
         svg {
@@ -140,17 +141,30 @@
 
         /* Glassmorphism Controls Card */
         .glass-panel {
-            background: rgba(15, 23, 42, 0.82);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(56, 189, 248, 0.25);
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(56, 189, 248, 0.3);
             box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
         }
 
-        /* Media Queries for Small & Landscape Displays */
-        @media (max-height: 600px) {
+        /* Responsive Mobile Styles */
+        @media (max-width: 640px) {
             .flower-container {
-                height: 65svh;
+                height: 88svh; /* Makes flowers reach significantly higher on mobile screens */
+                transform: translateX(-50%) scale(1.15); /* Scales flowers up so they aren't compressed */
+                transform-origin: bottom center;
+            }
+
+            .glass-panel {
+                border-radius: 1.5rem;
+            }
+        }
+
+        @media (max-height: 650px) {
+            .flower-container {
+                height: 80svh;
+                transform: translateX(-50%) scale(1.05);
             }
             header {
                 top: 0.5rem !important;
@@ -159,7 +173,7 @@
                 font-size: 1.5rem !important;
             }
             header p {
-                display: none;
+                font-size: 0.7rem !important;
             }
             footer {
                 margin-bottom: 0.5rem !important;
@@ -175,7 +189,7 @@
     <canvas id="particleCanvas"></canvas>
 
     <!-- Header Section -->
-    <header class="relative z-20 top-4 md:top-6 text-center px-4 max-w-xl transition-all duration-700">
+    <header class="relative z-20 pt-4 md:pt-6 text-center px-4 max-w-xl transition-all duration-700">
         <h1 id="titleText" class="text-2xl sm:text-3xl md:text-5xl font-handwriting tracking-wide text-sky-300 drop-shadow-[0_0_12px_rgba(56,189,248,0.8)]">
             Happy 1st Monthsarry💙
         </h1>
@@ -349,17 +363,17 @@
     </div>
 
     <!-- Responsive Footer & Action Buttons -->
-    <footer class="relative z-30 mb-4 sm:mb-6 flex flex-col items-center gap-2 sm:gap-3 px-3 w-full max-w-lg">
-        <div class="glass-panel px-3 sm:px-6 py-2.5 sm:py-3 rounded-full flex items-center justify-center gap-2 sm:gap-4 border border-sky-500/30 shadow-lg w-full sm:w-auto flex-wrap">
-            <button id="replayBtn" class="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 bg-sky-600/80 hover:bg-sky-500 text-white text-[11px] sm:text-xs md:text-sm font-semibold rounded-full transition-all duration-300 active:scale-95 shadow-md whitespace-nowrap">
+    <footer class="relative z-30 mb-3 sm:mb-6 flex flex-col items-center gap-2 sm:gap-3 px-3 w-full max-w-md">
+        <div class="glass-panel p-2 sm:px-5 sm:py-3 rounded-2xl sm:rounded-full flex items-center justify-center gap-2 sm:gap-3 border border-sky-500/30 shadow-xl w-full">
+            <button id="replayBtn" class="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-sky-600/80 hover:bg-sky-500 text-white text-[11px] sm:text-xs font-semibold rounded-xl sm:rounded-full transition-all duration-300 active:scale-95 shadow-md whitespace-nowrap">
                 <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
                 Rebloom
             </button>
-            <button id="musicBtn" class="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 bg-slate-800/80 hover:bg-slate-700 text-sky-300 text-[11px] sm:text-xs md:text-sm font-medium rounded-full transition-all duration-300 active:scale-95 border border-sky-500/30 whitespace-nowrap">
+            <button id="musicBtn" class="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-slate-800/80 hover:bg-slate-700 text-sky-300 text-[11px] sm:text-xs font-medium rounded-xl sm:rounded-full transition-all duration-300 active:scale-95 border border-sky-500/30 whitespace-nowrap">
                 <svg id="musicIcon" class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12 0c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path></svg>
                 <span id="musicText">Play Music</span>
             </button>
-            <button id="noteBtn" class="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 bg-sky-950/60 hover:bg-sky-900/80 text-sky-200 text-[11px] sm:text-xs md:text-sm font-medium rounded-full transition-all duration-300 active:scale-95 border border-sky-400/30 whitespace-nowrap">
+            <button id="noteBtn" class="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-sky-950/60 hover:bg-sky-900/80 text-sky-200 text-[11px] sm:text-xs font-medium rounded-xl sm:rounded-full transition-all duration-300 active:scale-95 border border-sky-400/30 whitespace-nowrap">
                 <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
                 Special Note
             </button>
