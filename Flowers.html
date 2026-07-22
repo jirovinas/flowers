@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Flowers for you</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Plus+Jakarta+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #030b1e; /* Deep Stitch Space Blue */
+            --stem-glow: #38bdf8;
+            --center-glow: #fef08a;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            height: 100svh;
+            background-color: var(--bg-color);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            overflow: hidden;
+            user-select: none;
+            touch-action: manipulation;
+        }
+
+        .font-handwriting {
+            font-family: 'Dancing Script', cursive;
+        }
+
+        #particleCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* Fully Responsive Flower Container */
+        .flower-container {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 900px;
+            height: 72svh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        svg {
+            width: 100%;
+            height: 100%;
+            overflow: visible;
+        }
+
+        /* SVG Flower Art Styling */
+        .stem {
+            stroke-dasharray: 1000;
+            stroke-dashoffset: 1000;
+            animation: growStem 3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.7));
+        }
+
+        .leaf {
+            transform-origin: center;
+            opacity: 0;
+            transform: scale(0);
+            animation: unfurlLeaf 1.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            filter: drop-shadow(0 0 8px rgba(14, 165, 233, 0.6));
+        }
+
+        .flower-head {
+            transform-origin: center;
+            opacity: 0;
+            transform: scale(0) rotate(-20deg);
+            animation: bloomHead 2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            filter: drop-shadow(0 0 14px rgba(96, 165, 250, 0.8));
+        }
+
+        .petal path {
+            transform-origin: center;
+            animation: pulsePetalPath 4s ease-in-out infinite alternate;
+        }
+
+        .center-disc {
+            filter: drop-shadow(0 0 12px #38bdf8);
+            animation: glowCenter 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes growStem {
+            to { stroke-dashoffset: 0; }
+        }
+
+        @keyframes unfurlLeaf {
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes bloomHead {
+            to {
+                opacity: 1;
+                transform: scale(1) rotate(0deg);
+            }
+        }
+
+        @keyframes pulsePetalPath {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.05); }
+        }
+
+        @keyframes glowCenter {
+            0% { filter: drop-shadow(0 0 8px #a5f3fc); }
+            100% { filter: drop-shadow(0 0 18px #38bdf8); }
+        }
+
+        .grass-blade {
+            transform-origin: bottom center;
+            animation: swayGrass 4s ease-in-out infinite alternate;
+        }
+
+        @keyframes swayGrass {
+            0% { transform: rotate(-2deg); }
+            100% { transform: rotate(3deg); }
+        }
+
+        /* Glassmorphism Controls Card */
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.82);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+        }
+
+        /* Media Queries for Small & Landscape Displays */
+        @media (max-height: 600px) {
+            .flower-container {
+                height: 65svh;
+            }
+            header {
+                top: 0.5rem !important;
+            }
+            header h1 {
+                font-size: 1.5rem !important;
+            }
+            header p {
+                display: none;
+            }
+            footer {
+                margin-bottom: 0.5rem !important;
+            }
+        }
+    </style>
+</head>
+<body class="relative flex flex-col justify-between items-center text-white overflow-hidden">
+
+    <!-- Audio Element for downloaded file -->
+    <audio id="bgAudio" src="kalapastanganan.mp4" loop preload="auto"></audio>
+
+    <canvas id="particleCanvas"></canvas>
+
+    <!-- Header Section -->
+    <header class="relative z-20 top-4 md:top-6 text-center px-4 max-w-xl transition-all duration-700">
+        <h1 id="titleText" class="text-2xl sm:text-3xl md:text-5xl font-handwriting tracking-wide text-sky-300 drop-shadow-[0_0_12px_rgba(56,189,248,0.8)]">
+            Happy 1st Monthsarry💙
+        </h1>
+        <p id="subText" class="text-[11px] sm:text-xs md:text-sm text-sky-100/70 mt-1 sm:mt-2 font-light tracking-wider">
+            "Flowers For You Baby, Sorry wala pang pambili ng tunay"
+        </p>
+    </header>
+
+    <!-- Flower Container -->
+    <div class="flower-container">
+        <svg id="flowerSvg" class="w-full h-full" viewBox="0 0 800 900" preserveAspectRatio="xMidYMax meet" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <!-- Stitch Theme Gradients -->
+                <linearGradient id="stemGradient" x1="0%" y1="100%" x2="0%" y2="0%">
+                    <stop offset="0%" stop-color="#092540" />
+                    <stop offset="50%" stop-color="#0284c7" />
+                    <stop offset="100%" stop-color="#38bdf8" />
+                </linearGradient>
+
+                <linearGradient id="leafGradientLeft" x1="100%" y1="100%" x2="0%" y2="0%">
+                    <stop offset="0%" stop-color="#0c4a6e" />
+                    <stop offset="60%" stop-color="#0284c7" />
+                    <stop offset="100%" stop-color="#7dd3fc" />
+                </linearGradient>
+
+                <linearGradient id="leafGradientRight" x1="0%" y1="100%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#0c4a6e" />
+                    <stop offset="60%" stop-color="#0369a1" />
+                    <stop offset="100%" stop-color="#bae6fd" />
+                </linearGradient>
+
+                <!-- Stitch Blue & Indigo Petal Gradient -->
+                <linearGradient id="petalGradient" x1="0%" y1="100%" x2="0%" y2="0%">
+                    <stop offset="0%" stop-color="#1e1b4b" />
+                    <stop offset="35%" stop-color="#1d4ed8" />
+                    <stop offset="75%" stop-color="#3b82f6" />
+                    <stop offset="100%" stop-color="#93c5fd" />
+                </linearGradient>
+
+                <!-- Stitch Center Disc -->
+                <radialGradient id="centerDiscGrad" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stop-color="#fef08a" />
+                    <stop offset="60%" stop-color="#38bdf8" />
+                    <stop offset="100%" stop-color="#1d4ed8" />
+                </radialGradient>
+
+                <linearGradient id="grassGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+                    <stop offset="0%" stop-color="#030b1e" stop-opacity="0" />
+                    <stop offset="100%" stop-color="#0284c7" stop-opacity="0.6" />
+                </linearGradient>
+            </defs>
+
+            <g id="grassLayer">
+                <path class="grass-blade" d="M120 900 C110 820 80 750 40 700 C70 760 110 830 130 900" fill="url(#grassGrad)" />
+                <path class="grass-blade" d="M180 900 C190 800 230 730 280 670 C230 740 190 820 180 900" fill="url(#grassGrad)" style="animation-delay: -1s;" />
+                <path class="grass-blade" d="M620 900 C610 810 580 720 520 660 C570 730 610 820 630 900" fill="url(#grassGrad)" style="animation-delay: -2s;" />
+                <path class="grass-blade" d="M700 900 C720 820 750 760 780 710 C740 770 720 830 700 900" fill="url(#grassGrad)" style="animation-delay: -0.5s;" />
+            </g>
+
+            <!-- Main Central Stem -->
+            <path id="stemMain" class="stem" d="M 400 900 C 400 750 395 500 400 280" stroke="url(#stemGradient)" stroke-width="10" stroke-linecap="round" fill="none" />
+
+            <!-- Left Branch Stem -->
+            <path id="stemLeft" class="stem" d="M 400 680 C 350 600 290 480 270 380" stroke="url(#stemGradient)" stroke-width="8" stroke-linecap="round" fill="none" style="animation-delay: 0.6s;" />
+
+            <!-- Right Branch Stem -->
+            <path id="stemRight" class="stem" d="M 400 620 C 460 540 520 460 550 350" stroke="url(#stemGradient)" stroke-width="8" stroke-linecap="round" fill="none" style="animation-delay: 1s;" />
+
+            <!-- LEAVES ALONG MAIN STEM -->
+            <g id="leavesGroup">
+                <!-- Left leaves -->
+                <path class="leaf" d="M 395 820 C 330 810 280 770 260 740 C 310 750 370 780 395 820" fill="url(#leafGradientLeft)" style="animation-delay: 1.2s;" />
+                <path class="leaf" d="M 395 730 C 310 710 250 660 220 610 C 280 630 350 680 395 730" fill="url(#leafGradientLeft)" style="animation-delay: 1.6s;" />
+                <path class="leaf" d="M 398 620 C 330 580 280 520 260 460 C 310 500 370 560 398 620" fill="url(#leafGradientLeft)" style="animation-delay: 2s;" />
+                <path class="leaf" d="M 398 500 C 340 450 300 390 290 330 C 330 370 380 430 398 500" fill="url(#leafGradientLeft)" style="animation-delay: 2.3s;" />
+
+                <!-- Right leaves -->
+                <path class="leaf" d="M 405 800 C 470 790 520 750 540 720 C 490 730 430 760 405 800" fill="url(#leafGradientRight)" style="animation-delay: 1.4s;" />
+                <path class="leaf" d="M 405 710 C 490 690 550 640 580 590 C 520 610 450 660 405 710" fill="url(#leafGradientRight)" style="animation-delay: 1.8s;" />
+                <path class="leaf" d="M 402 590 C 470 550 520 490 540 430 C 490 470 430 530 402 590" fill="url(#leafGradientRight)" style="animation-delay: 2.2s;" />
+                <path class="leaf" d="M 402 470 C 460 420 500 360 510 300 C 470 340 420 400 402 470" fill="url(#leafGradientRight)" style="animation-delay: 2.5s;" />
+                
+                <!-- Side Stem Leaves -->
+                <path class="leaf" d="M 320 520 C 260 510 220 470 200 420 C 250 440 300 480 320 520" fill="url(#leafGradientLeft)" style="animation-delay: 2.4s;" />
+                <path class="leaf" d="M 480 490 C 540 480 580 440 600 390 C 550 410 500 450 480 490" fill="url(#leafGradientRight)" style="animation-delay: 2.6s;" />
+            </g>
+
+            <!-- TOP CENTER FLOWER HEAD -->
+            <g class="flower-head" style="animation-delay: 2.8s;">
+                <g transform="translate(400, 275)">
+                    <!-- Outer Ring Petals -->
+                    <g class="petal" style="transform: scale(1.15) rotate(0deg); opacity: 0.9;"><path d="M 0 0 C -45 -60 -50 -120 0 -150 C 50 -120 45 -60 0 0 Z" fill="url(#petalGradient)" /></g>
+                    <g class="petal" style="transform: scale(1.15) rotate(36deg); opacity: 0.9;"><path d="M 0 0 C -45 -60 -50 -120 0 -150 C 50 -120 45 -60 0 0 Z" fill="url(#petalGradient)" /></g>
+                    <g class="petal" style="transform: scale(1.15) rotate(72deg); opacity: 0.9;"><path d="M 0 0 C -45 -60 -50 -120 0 -150 C 50 -120 45 -60 0 0 Z" fill="url(#petalGradient)" /></g>
+                    <g class="petal" style="transform: scale(1.15) rotate(108deg); opacity: 0.9;"><path d="M 0 0 C -45 -60 -50 -120 0 -150 C 50 -120 45 -60 0 0 Z" fill="url(#petalGradient)" /></g>
+                    <g class="petal" style="transform: scale(1.15) rotate(144deg); opacity: 0.9;"><path d="M 0 0 C -45 -60 -50 -120 0 -150 C 50 -120 45 -60 0 0 Z" fill="url(#petalGradient)" /></g>
+                    <g class="petal" style="transform: scale(1.15) rotate(180deg); opacity: 0.9;"><path d="M 0 0 C -45 -60 -50 -120 0 -150 C 50 -120 45 -60 0 0 Z" fill="url(#petalGradient)" /></g>
+                    <g class="petal" style="transform: scale(1.15) rotate(216deg); opacity: 0.9;"><path d="M 0 0 C -45 -60 -50 -120 0 -150 C 50 -120 45 -60 0 0 Z" fill="url(#petalGradient)" /></g>
+                    <g class="petal" style="transform: scale(1.15) rotate(252deg); opacity: 0.9;"><path d="M 0 0 C -45 -60 -50 -120 0 -150 C 50 -120 45 -60 0 0 Z" fill="url(#petalGradient)" /></g>
+                    <g class="petal" style="transform: scale(1.15) rotate(288deg); opacity: 0.9;"><path d="M 0 0 C -45 -60 -50 -120 0 -150 C 50 -120 45 -60 0 0 Z" fill="url(#petalGradient)" /></g>
+                    <g class="petal" style="transform: scale(1.15) rotate(324deg); opacity: 0.9;"><path d="M 0 0 C -45 -60 -50 -120 0 -150 C 50 -120 45 -60 0 0 Z" fill="url(#petalGradient)" /></g>
+
+                    <!-- Inner Ring Petals -->
+                    <g class="petal" style="transform: scale(0.85) rotate(22.5deg);"><path d="M 0 0 C -45 -60 -50 -120 0 -150 C 50 -120 45 -60 0 0 Z" fill="url(#petalGradient)" /></g>
+                    <g class="petal" style="transform: scale(0.85) rotate(67.5deg);"><path d="M 0 0 C -45 -60 -50 -120 0 -150 C 50 -120 45 -60 0 0 Z" fill="url(#petalGradient)" /></g>
+                    <g class="petal" style="transform: scale(0.85) rotate(112.5deg);"><path d="M 0 0 C -45 -60 -50 -120 0 -150 C 50 -120 45 -60 0 0 Z" fill="url(#petalGradient)" /></g>
+                    <g class="petal" style="transform: scale(0.85) rotate(157.5deg);"><path d="M 0 0 C -45 -60 -50 -120 0 -150 C 50 -120 45 -60 0 0 Z" fill="url(#petalGradient)" /></g>
+                    <g class="petal" style="transform: scale(0.85) rotate(202.5deg);"><path d="M 0 0 C -45 -60 -50 -120 0 -150 C 50 -120 45 -60 0 0 Z" fill="url(#petalGradient)" /></g>
+                    <g class="petal" style="transform: scale(0.85) rotate(247.5deg);"><path d="M 0 0 C -45 -60 -50 -120 0 -150 C 50 -120 45 -60 0 0 Z" fill="url(#petalGradient)" /></g>
+                    <g class="petal" style="transform: scale(0.85) rotate(292.5deg);"><path d="M 0 0 C -45 -60 -50 -120 0 -150 C 50 -120 45 -60 0 0 Z" fill="url(#petalGradient)" /></g>
+                    <g class="petal" style="transform: scale(0.85) rotate(337.5deg);"><path d="M 0 0 C -45 -60 -50 -120 0 -150 C 50 -120 45 -60 0 0 Z" fill="url(#petalGradient)" /></g>
+
+                    <!-- Glowing Disc Center -->
+                    <ellipse class="center-disc" cx="0" cy="0" rx="35" ry="24" fill="url(#centerDiscGrad)" />
+                    <ellipse cx="0" cy="-2" rx="28" ry="16" fill="#e0f2fe" opacity="0.7" />
+                </g>
+            </g>
+
+            <!-- LEFT FLOWER HEAD -->
+            <g class="flower-head" style="animation-delay: 2.2s;">
+                <g transform="translate(270, 380) rotate(-15)">
+                    <!-- Outer Ring -->
+                    <g class="petal" style="transform: scale(1.1) rotate(0deg); opacity: 0.9;"><path d="M 0 0 C -38 -50 -42 -100 0 -125 C 42 -100 38 -50 0 0 Z" fill="url(#petalGradient)" /></g>
+                    <g class="petal" style="transform: scale(1.1) rotate(45deg); opacity: 0.9;"><path d="M 0 0 C -38 -50 -42 -100 0 -125 C 42 -100 38 -50 0 0 Z" fill="url(#petalGradient)" /></g>
+                    <g class="petal" style="transform: scale(1.1) rotate(90deg); opacity: 0.9;"><path d="M 0 0 C -38 -50 -42 -100 0 -125 C 42 -100 38 -50 0 0 Z" fill="url(#petalGradient)" /></g>
+                    <g class="petal" style="transform: scale(1.1) rotate(135deg); opacity: 0.9;"><path d="M 0 0 C -38 -50 -42 -100 0 -125 C 42 -100 38 -50 0 0 Z" fill="url(#petalGradient)" /></g>
+                    <g class="petal" style="transform: scale(1.1) rotate(180deg); opacity: 0.9;"><path d="M 0 0 C -38 -50 -42 -100 0 -125 C 42 -100 38 -50 0 0 Z" fill="url(#petalGradient)" /></g>
+                    <g class="petal" style="transform: scale(1.1) rotate(225deg); opacity: 0.9;"><path d="M 0 0 C -38 -50 -42 -100 0 -125 C 42 -100 38 -50 0 0 Z" fill="url(#petalGradient)" /></g>
+                    <g class="petal" style="transform: scale(1.1) rotate(270deg); opacity: 0.9;"><path d="M 0 0 C -38 -50 -42 -100 0 -125 C 42 -100 38 -50 0 0 Z" fill="url(#petalGradient)" /></g>
+                    <g class="petal" style="transform: scale(1.1) rotate(315deg); opacity: 0.9;"><path d="M 0 0 C -38 -50 -42 -100 0 -125 C 42 -100 38 -50 0 0 Z" fill="url(#petalGradient)" /></g>
+
+                    <!-- Inner Ring -->
+                    <g class="petal" style="transform: scale(0.8) rotate(22.5deg);"><path d="M 0 0 C -38 -50 -42 -100 0 -125 C 42 -100 38 -50 0 0 Z" fill="url(#petalGradient)" /></g>
+                    <g class="petal" style="transform: scale(0.8) rotate(82.5deg);"><path d="M 0 0 C -38 -50 -42 -100 0 -125 C 42 -100 38 -50 0 0 Z" fill="url(#petalGradient)" /></g>
+                    <g class="petal" style="transform: scale(0.8) rotate(142.5deg);"><path d="M 0 0 C -38 -50 -42 -100 0 -125 C 42 -100 38 -50 0 0 Z" fill="url(#petalGradient)" /></g>
+                    <g class="petal" style="transform: scale(0.8) rotate(202.5deg);"><path d="M 0 0 C -38 -50 -42 -100 0 -125 C 42 -100 38 -50 0 0 Z" fill="url(#petalGradient)" /></g>
+                    <g class="petal" style="transform: scale(0.8) rotate(262.5deg);"><path d="M 0 0 C -38 -50 -42 -100 0 -125 C 42 -100 38 -50 0 0 Z" fill="url(#petalGradient)" /></g>
+                    <g class="petal" style="transform: scale(0.8) rotate(322.5deg);"><path d="M 0 0 C -38 -50 -42 -100 0 -125 C 42 -100 38 -50 0 0 Z" fill="url(#petalGradient)" /></g>
+
+                    <!-- Center Disc -->
+                    <ellipse class="center-disc" cx="0" cy="0" rx="28" ry="19" fill="url(#centerDiscGrad)" />
+                </g>
+            </g>
+
+            <!-- RIGHT FLOWER HEAD -->
+            <g class="flower-head" style="animation-delay: 2.5s;">
+                <g transform="translate(550, 350) rotate(18)">
+                    <!-- Outer Ring -->
+                    <g class="petal" style="transform: scale(1.1) rotate(0deg); opacity: 0.9;"><path d="M 0 0 C -40 -55 -45 -110 0 -135 C 45 -110 40 -55 0 0 Z" fill="url(#petalGradient)" /></g>
+                    <g class="petal" style="transform: scale(1.1) rotate(45deg); opacity: 0.9;"><path d="M 0 0 C -40 -55 -45 -110 0 -135 C 45 -110 40 -55 0 0 Z" fill="url(#petalGradient)" /></g>
+                    <g class="petal" style="transform: scale(1.1) rotate(90deg); opacity: 0.9;"><path d="M 0 0 C -40 -55 -45 -110 0 -135 C 45 -110 40 -55 0 0 Z" fill="url(#petalGradient)" /></g>
+                    <g class="petal" style="transform: scale(1.1) rotate(135deg); opacity: 0.9;"><path d="M 0 0 C -40 -55 -45 -110 0 -135 C 45 -110 40 -55 0 0 Z" fill="url(#petalGradient)" /></g>
+                    <g class="petal" style="transform: scale(1.1) rotate(180deg); opacity: 0.9;"><path d="M 0 0 C -40 -55 -45 -110 0 -135 C 45 -110 40 -55 0 0 Z" fill="url(#petalGradient)" /></g>
+                    <g class="petal" style="transform: scale(1.1) rotate(225deg); opacity: 0.9;"><path d="M 0 0 C -40 -55 -45 -110 0 -135 C 45 -110 40 -55 0 0 Z" fill="url(#petalGradient)" /></g>
+                    <g class="petal" style="transform: scale(1.1) rotate(270deg); opacity: 0.9;"><path d="M 0 0 C -40 -55 -45 -110 0 -135 C 45 -110 40 -55 0 0 Z" fill="url(#petalGradient)" /></g>
+                    <g class="petal" style="transform: scale(1.1) rotate(315deg); opacity: 0.9;"><path d="M 0 0 C -40 -55 -45 -110 0 -135 C 45 -110 40 -55 0 0 Z" fill="url(#petalGradient)" /></g>
+
+                    <!-- Inner Ring -->
+                    <g class="petal" style="transform: scale(0.8) rotate(22.5deg);"><path d="M 0 0 C -40 -55 -45 -110 0 -135 C 45 -110 40 -55 0 0 Z" fill="url(#petalGradient)" /></g>
+                    <g class="petal" style="transform: scale(0.8) rotate(82.5deg);"><path d="M 0 0 C -40 -55 -45 -110 0 -135 C 45 -110 40 -55 0 0 Z" fill="url(#petalGradient)" /></g>
+                    <g class="petal" style="transform: scale(0.8) rotate(142.5deg);"><path d="M 0 0 C -40 -55 -45 -110 0 -135 C 45 -110 40 -55 0 0 Z" fill="url(#petalGradient)" /></g>
+                    <g class="petal" style="transform: scale(0.8) rotate(202.5deg);"><path d="M 0 0 C -40 -55 -45 -110 0 -135 C 45 -110 40 -55 0 0 Z" fill="url(#petalGradient)" /></g>
+                    <g class="petal" style="transform: scale(0.8) rotate(262.5deg);"><path d="M 0 0 C -40 -55 -45 -110 0 -135 C 45 -110 40 -55 0 0 Z" fill="url(#petalGradient)" /></g>
+                    <g class="petal" style="transform: scale(0.8) rotate(322.5deg);"><path d="M 0 0 C -40 -55 -45 -110 0 -135 C 45 -110 40 -55 0 0 Z" fill="url(#petalGradient)" /></g>
+
+                    <!-- Center Disc -->
+                    <ellipse class="center-disc" cx="0" cy="0" rx="30" ry="20" fill="url(#centerDiscGrad)" />
+                </g>
+            </g>
+        </svg>
+    </div>
+
+    <!-- Responsive Footer & Action Buttons -->
+    <footer class="relative z-30 mb-4 sm:mb-6 flex flex-col items-center gap-2 sm:gap-3 px-3 w-full max-w-lg">
+        <div class="glass-panel px-3 sm:px-6 py-2.5 sm:py-3 rounded-full flex items-center justify-center gap-2 sm:gap-4 border border-sky-500/30 shadow-lg w-full sm:w-auto flex-wrap">
+            <button id="replayBtn" class="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 bg-sky-600/80 hover:bg-sky-500 text-white text-[11px] sm:text-xs md:text-sm font-semibold rounded-full transition-all duration-300 active:scale-95 shadow-md whitespace-nowrap">
+                <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                Rebloom
+            </button>
+            <button id="musicBtn" class="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 bg-slate-800/80 hover:bg-slate-700 text-sky-300 text-[11px] sm:text-xs md:text-sm font-medium rounded-full transition-all duration-300 active:scale-95 border border-sky-500/30 whitespace-nowrap">
+                <svg id="musicIcon" class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12 0c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path></svg>
+                <span id="musicText">Play Music</span>
+            </button>
+            <button id="noteBtn" class="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 bg-sky-950/60 hover:bg-sky-900/80 text-sky-200 text-[11px] sm:text-xs md:text-sm font-medium rounded-full transition-all duration-300 active:scale-95 border border-sky-400/30 whitespace-nowrap">
+                <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+                Special Note
+            </button>
+        </div>
+    </footer>
+
+    <!-- Secret Note Modal -->
+    <div id="noteModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="glass-panel max-w-sm sm:max-w-md w-full p-5 sm:p-6 rounded-2xl text-center border border-sky-400/30 transform scale-90 transition-transform duration-300" id="modalCard">
+            <h2 class="text-xl sm:text-2xl font-handwriting text-sky-300 mb-2">A Secret Message 💙</h2>
+            <p class="text-xs sm:text-sm text-slate-200 leading-relaxed font-light mb-5 sm:mb-6">
+                "Pasensya na kung wala akong pambili ng tunay na bulaklak, Ito nalang muna sana napasaya kita kahit kunti lang ginawa kong blue ang color kasi favorite mo ang blue and kaya tatlo yan kasi I LOVE YOU, bawi nalang ako sa susunod, soon tunay na bulaklak na. Happy 1st Monthsarry Baby ko I Love You💙"
+            </p>
+            <div class="flex justify-center gap-3">
+                <button id="closeModal" class="px-5 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-full text-xs font-semibold tracking-wider transition-colors">
+                    Close With Love
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* Responsive Particle Canvas */
+        const canvas = document.getElementById('particleCanvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Firefly {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = canvas.height + Math.random() * 50;
+                this.size = Math.random() * 2.2 + 0.8;
+                this.speedY = Math.random() * 0.8 + 0.3;
+                this.speedX = (Math.random() - 0.5) * 0.5;
+                this.opacity = Math.random() * 0.8 + 0.2;
+                this.pulseSpeed = Math.random() * 0.03 + 0.01;
+                this.color = Math.random() > 0.3 ? '#38bdf8' : '#7dd3fc';
+            }
+
+            update() {
+                this.y -= this.speedY;
+                this.x += Math.sin(this.y * 0.01) * this.speedX;
+                this.opacity += Math.sin(Date.now() * this.pulseSpeed) * 0.015;
+
+                if (this.y < -10 || this.opacity <= 0) {
+                    this.reset();
+                }
+            }
+
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, Math.min(1, this.opacity));
+                ctx.fillStyle = this.color;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        function initParticles() {
+            particles = [];
+            const count = window.innerWidth < 640 ? 35 : 65;
+            for (let i = 0; i < count; i++) {
+                const f = new Firefly();
+                f.y = Math.random() * canvas.height;
+                particles.push(f);
+            }
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animateParticles);
+        }
+
+        initParticles();
+        animateParticles();
+
+        /* Rebloom Logic */
+        const replayBtn = document.getElementById('replayBtn');
+        const flowerSvg = document.getElementById('flowerSvg');
+
+        replayBtn.addEventListener('click', () => {
+            const clone = flowerSvg.cloneNode(true);
+            flowerSvg.parentNode.replaceChild(clone, flowerSvg);
+            
+            for (let i = 0; i < 15; i++) {
+                setTimeout(() => {
+                    const f = new Firefly();
+                    f.x = window.innerWidth / 2 + (Math.random() - 0.5) * 200;
+                    f.y = window.innerHeight * 0.7;
+                    particles.push(f);
+                }, i * 100);
+            }
+        });
+
+        /* Audio Player for External File */
+        const musicBtn = document.getElementById('musicBtn');
+        const musicText = document.getElementById('musicText');
+        const bgAudio = document.getElementById('bgAudio');
+
+        function toggleAudio() {
+            if (bgAudio.paused) {
+                bgAudio.play().then(() => {
+                    musicText.innerText = "Pause Music";
+                    musicBtn.classList.add('bg-sky-600', 'text-white');
+                    musicBtn.classList.remove('bg-slate-800/80', 'text-sky-300');
+                }).catch(error => {
+                    console.error("Playback error:", error);
+                    musicText.innerText = "File 'kalapastanganan.mp4' not found";
+                    setTimeout(() => {
+                        musicText.innerText = "Play Music";
+                    }, 3000);
+                });
+            } else {
+                bgAudio.pause();
+                musicText.innerText = "Play Music";
+                musicBtn.classList.remove('bg-sky-600', 'text-white');
+                musicBtn.classList.add('bg-slate-800/80', 'text-sky-300');
+            }
+        }
+
+        musicBtn.addEventListener('click', toggleAudio);
+
+        /* Modal Script */
+        const noteBtn = document.getElementById('noteBtn');
+        const noteModal = document.getElementById('noteModal');
+        const modalCard = document.getElementById('modalCard');
+        const closeModal = document.getElementById('closeModal');
+
+        function openModal() {
+            noteModal.classList.remove('opacity-0', 'pointer-events-none');
+            modalCard.classList.remove('scale-90');
+            modalCard.classList.add('scale-100');
+        }
+
+        function hideModal() {
+            noteModal.classList.add('opacity-0', 'pointer-events-none');
+            modalCard.classList.remove('scale-100');
+            modalCard.classList.add('scale-90');
+        }
+
+        noteBtn.addEventListener('click', openModal);
+        closeModal.addEventListener('click', hideModal);
+        noteModal.addEventListener('click', (e) => {
+            if (e.target === noteModal) hideModal();
+        });
+    </script>
+</body>
+</html>
